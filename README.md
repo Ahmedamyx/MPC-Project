@@ -10,6 +10,12 @@ with input-delay compensation.
 📄 **[Full technical report (PDF)](report/MPC_mini_project_report.pdf)** — derivations, tuning
 rationale, terminal-set plots and closed-loop results.
 
+![Merged linear MPC tracing the letters TVC in 3-D on the nonlinear rocket simulator](report/figures/tvc_tracking.png)
+
+*Deliverable 4.1 — the four sub-system controllers merged and run against the **nonlinear**
+plant, tracing the letters "TVC" in 3-D over 30 s. Dashed lines are the reference; the input
+panels show δ₁/δ₂, P<sub>avg</sub> and P<sub>diff</sub> riding their constraints (dash-dot).*
+
 ---
 
 ## The system
@@ -64,7 +70,8 @@ rocket_project/
 ├── templates/           Unmodified course skeletons (for reference/diffing)
 └── sciper.txt           Group members
 report/
-└── MPC_mini_project_report.pdf
+├── MPC_mini_project_report.pdf
+└── figures/             Figures used by this README, extracted from the report
 ```
 
 Each `Deliverable_X_Y/` folder is **self-contained**: it holds its own copy of the controller
@@ -119,6 +126,14 @@ computed as the **maximal invariant set** of the closed loop `x⁺ = (A + BK)x` 
 `X_f ← X_f ∩ pre(X_f)` until convergence. Each controller plots its own terminal set (projected
 onto 2-D slices for the 4-state sub-systems).
 
+<p align="center">
+  <img src="report/figures/terminal_set_x.png" width="480" alt="Maximal invariant set for the x sub-system, projected onto the omega_y–beta plane">
+</p>
+
+*The x sub-system's terminal set projected onto (ω<sub>y</sub>, β). The flat top and bottom at
+β = ±0.1745 are the state constraint; the sheared sides come from the input constraint
+\|δ₂\| ≤ 0.26 propagated backwards through the LQR closed loop.*
+
 Tuning — `H = 10 s`, `T_s = 1/20 s`, `R = 1` throughout:
 
 ```
@@ -159,6 +174,14 @@ offset-free tracking.
   constant `d`, so a residual drift remains; the report discusses this and points at an adaptive
   estimator as the fix.
 
+| Without the observer | With offset-free tracking |
+|---|---|
+| ![Altitude settling below the reference, leaving a steady-state offset](report/figures/offset_free_without.png) | ![Altitude converging onto the reference](report/figures/offset_free_with.png) |
+
+*Same controller, same mass mismatch. Left: `z` settles around 2.885 m against a 3 m reference —
+a ~11 cm steady-state offset the nominal controller cannot remove. Right: with the disturbance
+estimate fed into the steady-state target, `z` converges onto the dashed reference.*
+
 ### 6.1 — Nonlinear MPC
 
 Drops the decomposition entirely and optimises over the full 12-state model in CasADi. The
@@ -173,6 +196,12 @@ with **IPOPT**, warm-started from the previous solution.
 Run for both a 15° and a 50° maximum-roll reference — the aggressive-roll case is what motivated
 the heavier weights on γ and z.
 
+![NMPC closed loop tracking the TVC path with a 50 degree maximum roll](report/figures/nmpc_roll50.png)
+
+*NMPC closed loop on the 50° maximum-roll reference — γ tracks steps to +25° and −50° while the
+position still follows the path. The linear controllers, valid only near the trim point, cannot
+be pushed this far.*
+
 ### 6.2 — Delay compensation
 
 Real MPC takes time to solve, so the input reaches the actuators late. With `T_s = 1/40` and a
@@ -183,6 +212,15 @@ the inputs still in flight (kept in a `mem_u` buffer), and optimise from *that* 
 The script compares **full** compensation (`expected_delay = 3`, recovering essentially the
 zero-delay response) against **partial** compensation (`expected_delay = 2`, which converges but
 keeps some oscillation in x and y).
+
+| 3-step delay, uncompensated | 3-step delay, fully compensated |
+|---|---|
+| ![Inputs chattering between saturation limits, attitude bounds violated, position never converging](report/figures/delay_uncompensated.png) | ![Clean monotone convergence to the reference](report/figures/delay_compensated.png) |
+
+*The failure is unambiguous. Left: every input bang-bangs between its limits, α and β blow
+through their ±10° bounds to ±40°, and the position oscillates without settling. Right: with the
+state predicted forward by the same 3 steps, the response is smooth and converges — x → 0.5 m,
+z → 1 m, γ → 65°.*
 
 ---
 

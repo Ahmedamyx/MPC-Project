@@ -13,8 +13,8 @@ codegen/
 *.mat
 
 # Figures exported during runs
+# (note: report/figures/ is tracked on purpose — it feeds the README)
 *.fig
-figures/
 output/
 
 # YALMIP / solver logs
