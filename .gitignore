@@ -1,0 +1,27 @@
+# MATLAB
+*.asv
+*.m~
+*.autosave
+slprj/
+sccprj/
+codegen/
+*.mex*
+*.slxc
+
+# MATLAB session / cache
+.matlab/
+*.mat
+
+# Figures exported during runs
+*.fig
+figures/
+output/
+
+# YALMIP / solver logs
+gurobi.log
+ipopt.out
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
