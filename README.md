@@ -4,7 +4,7 @@
 
 MATLAB implementation of a full MPC stack for a thrust-vector-controlled (TVC) rocket: from
 linearisation and sub-system decomposition, through constrained linear MPC with terminal
-invariant sets, offset-free tracking under model mismatch, and finally a nonlinear MPC (NMPC)
+invariant sets, offset-free tracking under model mismatch, and finally to a nonlinear MPC (NMPC)
 with input-delay compensation.
 
 📄 **[Full technical report (PDF)](report/MPC_mini_project_report.pdf)**: derivations, tuning
